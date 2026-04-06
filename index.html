@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maintenance Ninja 🥷</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#0a0c0f;--surface:#111318;--border:#252a35;--text:#e8eaf0;--dim:#6b7280;--orange:#FF6B35;--teal:#4ECDC4;--green:#A8E6CF;--red:#FF4757;}
+  body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;}
+  .app{max-width:480px;margin:0 auto;padding:0 16px 40px;}
+  .header{text-align:center;padding:24px 0 16px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+  .logo{font-size:28px;font-weight:700;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(135deg,#FF6B35,#FFE66D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .tagline{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:3px;margin-top:4px;}
+  .step-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--orange);letter-spacing:3px;margin-bottom:8px;}
+  .step-title{font-size:20px;font-weight:700;margin-bottom:16px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;}
+  .grid4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all 0.15s;}
+  .card:active{transform:scale(0.97);}
+  .card.selected{border-color:var(--orange);background:rgba(255,107,53,0.1);box-shadow:0 0 0 1px var(--orange);}
+  .card-icon{font-size:22px;display:block;margin-bottom:6px;}
+  .card-label{font-size:13px;font-weight:700;letter-spacing:0.5px;}
+  .card-desc{font-size:10px;color:var(--dim);margin-top:2px;font-family:'Share Tech Mono',monospace;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--dim);transition:all 0.15s;}
+  .chip.selected{border-color:var(--teal);background:rgba(78,205,196,0.1);color:var(--teal);}
+  .textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.6;resize:vertical;min-height:80px;outline:none;}
+  .textarea:focus{border-color:var(--orange);}
+  .textarea::placeholder{color:#374151;}
+  .btn-primary{width:100%;background:linear-gradient(135deg,#FF6B35,#ff8c5a);border:none;border-radius:10px;padding:16px;color:white;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:8px;box-shadow:0 4px 24px rgba(255,107,53,0.35);}
+  .btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+  .btn-back{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--dim);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;}
+  .summary-card{background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.25);border-radius:12px;padding:16px;margin-bottom:16px;border-left:3px solid var(--orange);}
+  .summary-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--orange);letter-spacing:3px;margin-bottom:8px;}
+  .summary-text{font-size:13px;line-height:1.6;}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .panel-header{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+  .panel-title{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;flex:1;}
+  .panel-count{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);background:#1a1f28;padding:2px 8px;border-radius:10px;}
+  .panel-body{padding:12px 16px;}
+  .result-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+  .result-item:last-child{border-bottom:none;}
+  .result-num{font-family:'Share Tech Mono',monospace;font-size:10px;color:#374151;min-width:16px;padding-top:2px;}
+  .result-text{font-size:12px;line-height:1.6;}
+  .panel-warning .panel-header{background:rgba(255,71,87,0.06);}
+  .panel-warning .panel-title{color:var(--red);}
+  .panel-info .panel-header{background:rgba(78,205,196,0.06);}
+  .panel-info .panel-title{color:var(--teal);}
+  .panel-action .panel-header{background:rgba(255,107,53,0.06);}
+  .panel-action .panel-title{color:var(--orange);}
+  .panel-prevent .panel-header{background:rgba(168,230,207,0.06);}
+  .panel-prevent .panel-title{color:var(--green);}
+  .loading{text-align:center;padding:48px 20px;}
+  .pulse{width:64px;height:64px;border-radius:50%;border:2px solid var(--orange);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:28px;animation:pulse 1.2s ease-in-out infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,107,53,0.4);}70%{box-shadow:0 0 0 20px rgba(255,107,53,0);}100%{box-shadow:0 0 0 0 rgba(255,107,53,0);}}
+  .loading-text{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--orange);letter-spacing:3px;animation:blink 1s step-end infinite;}
+  @keyframes blink{50%{opacity:0.3;}}
+  .selection-summary{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.8;color:var(--dim);}
+  .sel-val{color:var(--orange);}
+  .error{background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);border-radius:10px;padding:14px;color:var(--red);font-size:12px;margin-bottom:16px;}
+  .progress{display:flex;gap:4px;margin-bottom:20px;}
+  .progress-step{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background 0.3s;}
+  .progress-step.done{background:var(--orange);}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">🥷 Maintenance Ninja</div>
+    <div class="tagline">Steel Plant AI Troubleshooting</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress" id="progress">
+    <div class="progress-step" id="p1"></div>
+    <div class="progress-step" id="p2"></div>
+    <div class="progress-step" id="p3"></div>
+    <div class="progress-step" id="p4"></div>
+    <div class="progress-step" id="p5"></div>
+  </div>
+
+  <!-- STEP 1: Equipment -->
+  <div id="step1">
+    <div class="step-label">STEP 1 OF 5</div>
+    <div class="step-title">Select Equipment</div>
+    <div class="grid2">
+      <div class="card" onclick="selectEquipment('Rolling Mill','⚙️')">
+        <span class="card-icon">⚙️</span>
+        <div class="card-label">Rolling Mill</div>
+      </div>
+      <div class="card" onclick="selectEquipment('CCM','🏗️')">
+        <span class="card-icon">🏗️</span>
+        <div class="card-label">CCM</div>
+      </div>
+      <div class="card" onclick="selectEquipment('Hydraulics','🔧')">
+        <span class="card-icon">🔧</span>
+        <div class="card-label">Hydraulics</div>
+      </div>
+      <div class="card" onclick="selectEquipment('EOT Crane','🏋️')">
+        <span class="card-icon">🏋️</span>
+        <div class="card-label">EOT Crane</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Symptom -->
+  <div id="step2" class="hidden">
+    <div class="step-label">STEP 2 OF 5</div>
+    <div class="step-title">What's the Problem?</div>
+    <div class="grid4" id="symptomGrid"></div>
+    <button class="btn-back" onclick="goTo(1)">← Back</button>
+  </div>
+
+  <!-- STEP 3: Location -->
+  <div id="step3" class="hidden">
+    <div class="step-label">STEP 3 OF 5</div>
+    <div class="step-title">Where Exactly?</div>
+    <div class="chips" id="locationChips"></div>
+    <button class="btn-back" onclick="goTo(2)">← Back</button>
+  </div>
+
+  <!-- STEP 4: Level + Mode -->
+  <div id="step4" class="hidden">
+    <div class="step-label">STEP 4 OF 5</div>
+    <div class="step-title">Your Level & Mode</div>
+    <div class="step-label" style="margin-top:0">EXPERIENCE</div>
+    <div class="grid2" style="margin-bottom:16px">
+      <div class="card" id="lvl1" onclick="selectLevel('Junior Engineer')">
+        <div class="card-label">Junior</div>
+        <div class="card-desc">&lt; 2 years</div>
+      </div>
+      <div class="card selected" id="lvl2" onclick="selectLevel('Shift Engineer')">
+        <div class="card-label">Shift Engineer</div>
+        <div class="card-desc">2–8 years</div>
+      </div>
+      <div class="card" id="lvl3" onclick="selectLevel('Senior Engineer')">
+        <div class="card-label">Senior</div>
+        <div class="card-desc">8+ years</div>
+      </div>
+    </div>
+    <div class="step-label">MODE</div>
+    <div class="grid2" style="margin-bottom:16px">
+      <div class="card selected" id="modeBreakdown" onclick="selectMode('Breakdown')">
+        <div class="card-label">⚡ Rapid</div>
+        <div class="card-desc">Fast 3-point fix</div>
+      </div>
+      <div class="card" id="modeRCA" onclick="selectMode('Deep RCA')">
+        <div class="card-label">🔬 Deep RCA</div>
+        <div class="card-desc">Full analysis</div>
+      </div>
+    </div>
+    <button class="btn-back" onclick="goTo(3)">← Back</button>
+    <button class="btn-primary" onclick="goTo(5)">Continue →</button>
+  </div>
+
+  <!-- STEP 5: Description + Analyze -->
+  <div id="step5" class="hidden">
+    <div class="step-label">STEP 5 OF 5</div>
+    <div class="step-title">Add Details</div>
+    <div class="selection-summary" id="selectionSummary"></div>
+    <div class="step-label">// OPTIONAL DETAILS</div>
+    <textarea class="textarea" id="descInput" placeholder="e.g. started after roll change, noise from DS side, happened during high reduction pass..." rows="3"></textarea>
+    <div id="errorBox" class="error hidden"></div>
+    <button class="btn-back" onclick="goTo(4)">← Back</button>
+    <button class="btn-primary" id="analyzeBtn" onclick="analyze()">🥷 Analyze Now</button>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loading" class="loading hidden">
+    <div class="pulse">🥷</div>
+    <div class="loading-text">ANALYZING BREAKDOWN...</div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" class="hidden">
+    <div id="summaryCard" class="summary-card">
+      <div class="summary-label">🥷 DIAGNOSTIC SUMMARY</div>
+      <div class="summary-text" id="summaryText"></div>
+    </div>
+    <div class="panel panel-warning">
+      <div class="panel-header">
+        <span>⚠️</span>
+        <span class="panel-title">Probable Causes</span>
+        <span class="panel-count" id="c1">0</span>
+      </div>
+      <div class="panel-body" id="causesBody"></div>
+    </div>
+    <div class="panel panel-info">
+      <div class="panel-header">
+        <span>🔍</span>
+        <span class="panel-title">Checks to Confirm</span>
+        <span class="panel-count" id="c2">0</span>
+      </div>
+      <div class="panel-body" id="checksBody"></div>
+    </div>
+    <div class="panel panel-action">
+      <div class="panel-header">
+        <span>🔧</span>
+        <span class="panel-title">Corrective Actions</span>
+        <span class="panel-count" id="c3">0</span>
+      </div>
+      <div class="panel-body" id="actionsBody"></div>
+    </div>
+    <div class="panel panel-prevent">
+      <div class="panel-header">
+        <span>✅</span>
+        <span class="panel-title">Preventive Measures</span>
+        <span class="panel-count" id="c4">0</span>
+      </div>
+      <div class="panel-body" id="preventBody"></div>
+    </div>
+    <button class="btn-back" onclick="reset()" style="margin-top:8px">🔄 New Analysis</button>
+  </div>
+
+</div>
+
+<script>
+const SYMPTOMS = {
+  'Rolling Mill': [
+    {id:'High Temperature',icon:'🌡️'},{id:'Vibration / Noise',icon:'📳'},
+    {id:'Mill Trip / Fault',icon:'⚡'},{id:'Roll Breakage',icon:'💥'},
+    {id:'Cobble / Scrapping',icon:'🌀'},{id:'Oil / Water Leak',icon:'💧'},
+    {id:'Mill Chatter',icon:'〰️'},{id:'Other',icon:'❓'}
+  ],
+  'CCM': [
+    {id:'Bleedout / Breakout',icon:'🔥'},{id:'Mould Level Fluctuation',icon:'📊'},
+    {id:'Strand Stop',icon:'🛑'},{id:'Oscillation Fault',icon:'〰️'},
+    {id:'Spray / Cooling Issue',icon:'💦'},{id:'SEN Breakage',icon:'💥'},
+    {id:'Withdrawal Fault',icon:'⚙️'},{id:'Other',icon:'❓'}
+  ],
+  'Hydraulics': [
+    {id:'Pressure Drop',icon:'📉'},{id:'Leakage',icon:'💧'},
+    {id:'Overheating',icon:'🌡️'},{id:'Pump Noise / Cavitation',icon:'📳'},
+    {id:'Cylinder Drift',icon:'↔️'},{id:'Filter Alarm',icon:'⚠️'},
+    {id:'Servo Valve Fault',icon:'🔴'},{id:'Other',icon:'❓'}
+  ],
+  'EOT Crane': [
+    {id:'Brake Not Releasing',icon:'🛑'},{id:'Hoist Not Lifting',icon:'🏋️'},
+    {id:'VFD / Drive Fault',icon:'⚡'},{id:'Rope / Hook Issue',icon:'🪝'},
+    {id:'LT / CT Travel Fault',icon:'↔️'},{id:'Overload Trip',icon:'⚠️'},
+    {id:'Abnormal Noise',icon:'📳'},{id:'Other',icon:'❓'}
+  ]
+};
+
+const LOCATIONS = {
+  'Rolling Mill': ['Bearing / Chock','Gearbox','Spindle / Coupling','Hydraulic Cylinder','Roll / Pass','Drive Motor','Pinch Roll','Descaler'],
+  'CCM': ['Mould / Oscillation','Segment / Rolls','Tundish / SEN','Withdrawal Unit','Spray Zone','Ladle Turret','Dummy Bar','Torch Cutter'],
+  'Hydraulics': ['HPU / Pump','Servo Valve','Cylinder / Seal','Accumulator','Filter / Cooler','Hose / Fitting','Relief Valve','Manifold Block'],
+  'EOT Crane': ['Brake System','Hoist Drum / Rope','Gearbox','VFD / Panel','Wheel / Rail','Hook Block','Festoon Cable','Limit Switch']
+};
+
+let state = { equipment:'', symptom:'', location:'', level:'Shift Engineer', mode:'Breakdown' };
+
+function goTo(n) {
+  for(let i=1;i<=5;i++) document.getElementById('step'+i).classList.add('hidden');
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('progress').classList.remove('hidden');
+  if(n<=5) document.getElementById('step'+n).classList.remove('hidden');
+  updateProgress(n);
+}
+
+function updateProgress(n) {
+  for(let i=1;i<=5;i++) {
+    document.getElementById('p'+i).classList.toggle('done', i<n);
+  }
+}
+
+function selectEquipment(eq, icon) {
+  state.equipment = eq;
+  state.symptom = '';
+  state.location = '';
+  const grid = document.getElementById('symptomGrid');
+  grid.innerHTML = '';
+  SYMPTOMS[eq].forEach(s => {
+    grid.innerHTML += <div class="card" onclick="selectSymptom('${s.id}')"><span class="card-icon">${s.icon}</span><div class="card-label" style="font-size:11px">${s.id}</div></div>;
+  });
+  goTo(2);
+}
+
+function selectSymptom(sym) {
+  state.symptom = sym;
+  const chips = document.getElementById('locationChips');
+  chips.innerHTML = '';
+  LOCATIONS[state.equipment].forEach(loc => {
+    chips.innerHTML += <div class="chip" onclick="selectLocation('${loc}')">${loc}</div>;
+  });
+  goTo(3);
+}
+
+function selectLocation(loc) {
+  state.location = loc;
+  goTo(4);
+}
+
+function selectLevel(l) {
+  state.level = l;
+  ['lvl1','lvl2','lvl3'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  const map = {'Junior Engineer':'lvl1','Shift Engineer':'lvl2','Senior Engineer':'lvl3'};
+  document.getElementById(map[l]).classList.add('selected');
+}
+
+function selectMode(m) {
+  state.mode = m;
+  document.getElementById('modeBreakdown').classList.toggle('selected', m==='Breakdown');
+  document.getElementById('modeRCA').classList.toggle('selected', m==='Deep RCA');
+}
+
+function showSelectionSummary() {
+  document.getElementById('selectionSummary').innerHTML =
+    <span class="sel-val">⚙</span> ${state.equipment}<br> +
+    <span class="sel-val">⚠</span> ${state.symptom}<br> +
+    <span class="sel-val">📍</span> ${state.location}<br> +
+    <span class="sel-val">👤</span> ${state.level} · ${state.mode};
+}
+
+const _goTo = goTo;
+goTo = function(n) {
+  _goTo(n);
+  if(n===5) showSelectionSummary();
+}
+
+async function analyze() {
+  const description = Equipment: ${state.equipment}. Problem: ${state.symptom} at ${state.location}. ${document.getElementById('descInput').value};
+  document.getElementById('errorBox').classList.add('hidden');
+  document.getElementById('step5').classList.add('hidden');
+  document.getElementById('progress').classList.add('hidden');
+  document.getElementById('loading').classList.remove('hidden');
+
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ description, experienceLevel: state.level, mode: state.mode })
+    });
+    if(!res.ok) throw new Error('Analysis failed');
+    const data = await res.json();
+    showResults(data);
+  } catch(e) {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('step5').classList.remove('hidden');
+    document.getElementById('progress').classList.remove('hidden');
+    document.getElementById('errorBox').textContent = '⚠ ' + e.message;
+    document.getElementById('errorBox').classList.remove('hidden');
+  }
+}
+
+function renderItems(containerId, countId, items) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map((item,i) =>
+    <div class="result-item"><span class="result-num">${i+1}</span><span class="result-text">${item}</span></div>
+  ).join('');
+  document.getElementById(countId).textContent = items.length + ' items';
+}
+
+function showResults(data) {
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('summaryText').textContent = data.summary;
+  renderItems('causesBody','c1', data.probableCauses||[]);
+  renderItems('checksBody','c2', data.checksToConfirm||[]);
+  renderItems('actionsBody','c3', data.immediateCorrectiveActions||[]);
+  renderItems('preventBody','c4', data.preventiveMeasures||[]);
+  document.getElementById('results').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function reset() {
+  state = {equipment:'',symptom:'',location:'',level:'Shift Engineer',mode:'Breakdown'};
+  document.getElementById('descInput').value = '';
+  goTo(1);
+}
+</script>
+</body>
+</html>
