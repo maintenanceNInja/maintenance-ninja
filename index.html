@@ -331,7 +331,7 @@ async function analyze() {
   document.getElementById('loading').classList.remove('hidden');
 
   try {
-    const res = await fetch('/api/analyze', {
+    const res = await fetch('https://maintenance-ninja.onrender.com/api/analyze'
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ description, experienceLevel: state.level, mode: state.mode })
