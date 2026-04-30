@@ -4,7 +4,7 @@ const OpenAI = require("openai").default;
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -13,6 +13,7 @@ app.post("/api/analyze", async function(req, res) {
     const description = req.body.description;
     const experienceLevel = req.body.experienceLevel;
     const mode = req.body.mode;
+    const imageBase64 = req.body.image;
 
     const levelContext = {
       "Junior Engineer": "Explain clearly. Avoid heavy jargon. Include safety reminders.",
@@ -34,29 +35,59 @@ app.post("/api/analyze", async function(req, res) {
       "Failures: pump cavitation, servo valve contamination, cylinder seal leak, overheating.\n\n" +
       "EOT CRANE: Long travel, cross travel, hoisting, VFD panel, electromagnetic brake. " +
       "Failures: brake lining wear, rope fraying, VFD fault, coupling misalignment.\n\n" +
+      "BEARING DAMAGE PATTERNS: Spalling shows as pitting on race surface. Fretting shows as reddish-brown powder. " +
+      "False brinelling shows as elliptical wear marks. Overload shows as cracking. " +
+      "Contamination shows as scoring and embedded particles. Lubrication failure shows as heat discoloration.\n\n" +
+      "OIL CONTAMINATION PATTERNS: Milky white oil means water ingress. Black oil means oxidation/overheating. " +
+      "Metal particles mean wear. Foam means air ingress or wrong oil grade.\n\n" +
+      "CRACK PATTERNS: Fatigue cracks start small and propagate. Overload cracks are sudden and large. " +
+      "Stress corrosion cracks are branching. Thermal cracks follow heat gradients.\n\n" +
       "Experience Level: " + (levelContext[experienceLevel] || levelContext["Shift Engineer"]) + "\n" +
       "Analysis Mode: " + (modeRules[mode] || modeRules["Breakdown"]) + "\n\n" +
       "RULES:\n" +
-      "- probableCauses MUST start with emoji: 🔴 MOST LIKELY: or 🟡 POSSIBLE: or 🟢 CHECK:\n" +
-      "- Be specific to steel plant equipment only\n" +
-      "- Never invent OEM specs\n\n" +
+      "- probableCauses MUST start with 🔴 MOST LIKELY: or 🟡 POSSIBLE: or 🟢 CHECK:\n" +
+      "- If image provided, analyse visual evidence first and reference what you see\n" +
+      "- Be specific to steel plant equipment only\n\n" +
       "Respond ONLY with valid JSON:\n" +
       "{\n" +
-      '  "summary": "2 sentences about equipment, symptom and most likely cause.",\n' +
+      '  "summary": "2 sentences. Equipment, symptom and visual findings if image provided.",\n' +
       '  "probableCauses": ["🔴 MOST LIKELY: cause - reason", "🟡 POSSIBLE: cause - reason", "🟢 CHECK: cause - reason"],\n' +
       '  "checksToConfirm": ["check 1", "check 2", "check 3"],\n' +
       '  "immediateCorrectiveActions": ["Immediate: action", "Permanent: action", "SAFETY: note"],\n' +
       '  "preventiveMeasures": ["PM task 1 - frequency: interval", "PM task 2 - frequency: interval"]\n' +
       "}";
 
+    var messages;
+
+    if (imageBase64) {
+      messages = [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: [
+            {
+              type: "image_url",
+              image_url: { url: "data:image/jpeg;base64," + imageBase64 }
+            },
+            {
+              type: "text",
+              text: "Analyze this steel plant breakdown. Visual evidence shown in image.\n\n" + description
+            }
+          ]
+        }
+      ];
+    } else {
+      messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: "Analyze this steel plant breakdown:\n\n" + description }
+      ];
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       max_tokens: 2000,
       temperature: 0.3,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: "Analyze this steel plant breakdown:\n\n" + description }
-      ],
+      messages: messages,
       response_format: { type: "json_object" },
     });
 
