@@ -26,6 +26,7 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 .chip.selected,.chip:hover{border-color:#4ECDC4;background:rgba(78,205,196,0.1);color:#4ECDC4;}
 .textarea{width:100%;background:#111318;border:1px solid #252a35;border-radius:10px;padding:14px;color:#e8eaf0;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.6;resize:vertical;min-height:80px;outline:none;}
 .textarea:focus{border-color:#FF6B35;}
+.textarea::placeholder{color:#374151;}
 .btn-primary{width:100%;background:linear-gradient(135deg,#FF6B35,#ff8c5a);border:none;border-radius:10px;padding:16px;color:white;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:8px;box-shadow:0 4px 24px rgba(255,107,53,0.35);}
 .btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
 .btn-back{width:100%;background:#111318;border:1px solid #252a35;border-radius:10px;padding:12px;color:#6b7280;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;}
@@ -61,6 +62,15 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 .progress-step{flex:1;height:3px;background:#252a35;border-radius:2px;transition:background 0.3s;}
 .progress-step.done{background:#FF6B35;}
 .hidden{display:none;}
+.image-upload-area{border:2px dashed #252a35;border-radius:10px;padding:20px;text-align:center;cursor:pointer;margin-bottom:12px;transition:all 0.15s;}
+.image-upload-area:hover{border-color:#FF6B35;background:rgba(255,107,53,0.05);}
+.image-upload-area.has-image{border-color:#4ECDC4;background:rgba(78,205,196,0.05);}
+.upload-icon{font-size:28px;margin-bottom:8px;}
+.upload-text{font-family:'Share Tech Mono',monospace;font-size:11px;color:#6b7280;}
+.upload-hint{font-family:'Share Tech Mono',monospace;font-size:10px;color:#374151;margin-top:4px;}
+.image-preview{width:100%;max-height:200px;object-fit:contain;border-radius:8px;margin-top:8px;}
+.remove-image{background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);border-radius:6px;padding:4px 10px;color:#FF4757;font-size:11px;cursor:pointer;margin-top:8px;font-family:'Share Tech Mono',monospace;}
+.image-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(78,205,196,0.1);border:1px solid #4ECDC4;border-radius:20px;padding:3px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;color:#4ECDC4;margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -124,20 +134,37 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 <div class="step-label">STEP 5 OF 5</div>
 <div class="step-title">Add Details</div>
 <div class="sel-summary" id="selSum"></div>
-<div class="step-label">OPTIONAL DETAILS</div>
-<textarea class="textarea" id="extraDesc" placeholder="e.g. started after roll change, noise from DS side..." rows="3"></textarea>
+
+<div class="step-label">📷 UPLOAD PHOTO (OPTIONAL)</div>
+<div class="image-upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()">
+<div class="upload-icon">📸</div>
+<div class="upload-text">Tap to photograph damaged component</div>
+<div class="upload-hint">Bearing damage · Oil contamination · Cracks · Any visual evidence</div>
+<img id="imagePreview" class="image-preview hidden" src="" alt="preview"/>
+</div>
+<input type="file" id="imageInput" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this)"/>
+<div id="imageInfo" class="hidden">
+<span class="image-badge">📷 Photo attached — AI will analyse visually</span>
+<button class="remove-image" onclick="removeImage()">Remove photo</button>
+</div>
+
+<div class="step-label">// OPTIONAL DETAILS</div>
+<textarea class="textarea" id="extraDesc" placeholder="e.g. started after roll change, noise from DS side, oil looks milky..." rows="3"></textarea>
 <div id="errBox" class="error-box hidden"></div>
 <button class="btn-back" onclick="goStep(4)">Back</button>
-<button class="btn-primary" id="analyzeBtn" onclick="runAnalysis()">Analyze Now</button>
+<button class="btn-primary" id="analyzeBtn" onclick="runAnalysis()">🥷 Analyze Now</button>
 </div>
 
 <div id="loadingDiv" class="loading hidden">
 <div class="pulse">🥷</div>
 <div class="loading-text">ANALYZING BREAKDOWN...</div>
-<div style="margin-top:12px;font-size:11px;color:#374151;font-family:'Share Tech Mono',monospace">First request may take 30 seconds...</div>
+<div style="margin-top:12px;font-size:11px;color:#374151;font-family:'Share Tech Mono',monospace">First request may take 30 seconds to wake up server...</div>
 </div>
 
 <div id="resultsDiv" class="hidden">
+<div id="imageBadgeResult" class="hidden" style="margin-bottom:12px">
+<span class="image-badge">📷 Visual analysis included</span>
+</div>
 <div class="summary-card">
 <div class="summary-label">DIAGNOSTIC SUMMARY</div>
 <div class="summary-text" id="summaryText"></div>
@@ -158,7 +185,7 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 <div class="panel-header"><span>✅</span><span class="panel-title">Preventive Measures</span><span class="panel-count" id="c4"></span></div>
 <div class="panel-body" id="b4"></div>
 </div>
-<button class="btn-back" onclick="resetApp()" style="margin-top:8px">New Analysis</button>
+<button class="btn-back" onclick="resetApp()" style="margin-top:8px">🔄 New Analysis</button>
 </div>
 </div>
 
@@ -175,7 +202,7 @@ var LOCATIONS = {
 'Hydraulics':['HPU or Pump','Servo Valve','Cylinder or Seal','Accumulator','Filter or Cooler','Hose or Fitting','Relief Valve','Manifold Block'],
 'EOT Crane':['Brake System','Hoist Drum or Rope','Gearbox','VFD or Panel','Wheel or Rail','Hook Block','Festoon Cable','Limit Switch']
 };
-var state = {eq:'',sym:'',loc:'',level:'Shift Engineer',mode:'Breakdown'};
+var state = {eq:'',sym:'',loc:'',level:'Shift Engineer',mode:'Breakdown',imageBase64:''};
 
 function goStep(n) {
   for(var i=1;i<=5;i++){document.getElementById('step'+i).classList.add('hidden');}
@@ -237,6 +264,31 @@ function pickMode(m) {
   document.getElementById('modeR').classList.toggle('selected',m==='Deep RCA');
 }
 
+function handleImage(input) {
+  if(input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var result = e.target.result;
+      var base64 = result.split(',')[1];
+      state.imageBase64 = base64;
+      document.getElementById('imagePreview').src = result;
+      document.getElementById('imagePreview').classList.remove('hidden');
+      document.getElementById('uploadArea').classList.add('has-image');
+      document.getElementById('imageInfo').classList.remove('hidden');
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removeImage() {
+  state.imageBase64 = '';
+  document.getElementById('imagePreview').src = '';
+  document.getElementById('imagePreview').classList.add('hidden');
+  document.getElementById('uploadArea').classList.remove('has-image');
+  document.getElementById('imageInfo').classList.add('hidden');
+  document.getElementById('imageInput').value = '';
+}
+
 function renderItems(bodyId,countId,items) {
   var el=document.getElementById(bodyId);
   var html='';
@@ -254,14 +306,28 @@ function runAnalysis() {
   document.getElementById('step5').classList.add('hidden');
   document.getElementById('progress').classList.add('hidden');
   document.getElementById('loadingDiv').classList.remove('hidden');
+
+  var payload = {
+    description: desc,
+    experienceLevel: state.level,
+    mode: state.mode
+  };
+
+  if(state.imageBase64) {
+    payload.image = state.imageBase64;
+  }
+
   fetch('https://maintenance-ninja.onrender.com/api/analyze',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({description:desc,experienceLevel:state.level,mode:state.mode})
+    body:JSON.stringify(payload)
   })
   .then(function(r){return r.json();})
   .then(function(data){
     document.getElementById('loadingDiv').classList.add('hidden');
+    if(state.imageBase64){
+      document.getElementById('imageBadgeResult').classList.remove('hidden');
+    }
     document.getElementById('summaryText').textContent=data.summary||'';
     renderItems('b1','c1',data.probableCauses||[]);
     renderItems('b2','c2',data.checksToConfirm||[]);
@@ -274,14 +340,16 @@ function runAnalysis() {
     document.getElementById('loadingDiv').classList.add('hidden');
     document.getElementById('step5').classList.remove('hidden');
     document.getElementById('progress').classList.remove('hidden');
-    document.getElementById('errBox').textContent='Error: '+e.message;
+    document.getElementById('errBox').textContent='Error: '+e.message+' — Server may be waking up, try again in 30 seconds.';
     document.getElementById('errBox').classList.remove('hidden');
   });
 }
 
 function resetApp() {
-  state={eq:'',sym:'',loc:'',level:'Shift Engineer',mode:'Breakdown'};
+  state={eq:'',sym:'',loc:'',level:'Shift Engineer',mode:'Breakdown',imageBase64:''};
   document.getElementById('extraDesc').value='';
+  removeImage();
+  document.getElementById('imageBadgeResult').classList.add('hidden');
   goStep(1);
 }
 </script>
