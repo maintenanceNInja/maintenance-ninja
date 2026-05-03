@@ -134,20 +134,19 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 <div class="step-label">STEP 5 OF 5</div>
 <div class="step-title">Add Details</div>
 <div class="sel-summary" id="selSum"></div>
-
 <div class="step-label">📷 UPLOAD PHOTO (OPTIONAL)</div>
 <div class="image-upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()">
 <div class="upload-icon">📸</div>
-<div class="upload-text">Tap to photograph damaged component</div>
-<div class="upload-hint">Bearing damage · Oil contamination · Cracks · Any visual evidence</div>
+<div class="upload-text">Tap to upload photo of damaged component</div>
+<div class="upload-hint">Take photo or choose from gallery</div>
+<div class="upload-hint">Bearing damage · Oil contamination · Cracks</div>
 <img id="imagePreview" class="image-preview hidden" src="" alt="preview"/>
 </div>
-<input type="file" id="imageInput" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this)"/>
+<input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImage(this)"/>
 <div id="imageInfo" class="hidden">
 <span class="image-badge">📷 Photo attached — AI will analyse visually</span>
 <button class="remove-image" onclick="removeImage()">Remove photo</button>
 </div>
-
 <div class="step-label">// OPTIONAL DETAILS</div>
 <textarea class="textarea" id="extraDesc" placeholder="e.g. started after roll change, noise from DS side, oil looks milky..." rows="3"></textarea>
 <div id="errBox" class="error-box hidden"></div>
@@ -190,21 +189,21 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 </div>
 
 <script>
-var SYMPTOMS = {
+var SYMPTOMS={
 'Rolling Mill':[{id:'High Temperature',icon:'🌡️'},{id:'Vibration or Noise',icon:'📳'},{id:'Mill Trip',icon:'⚡'},{id:'Roll Breakage',icon:'💥'},{id:'Cobble',icon:'🌀'},{id:'Oil Leak',icon:'💧'},{id:'Mill Chatter',icon:'〰️'},{id:'Other',icon:'❓'}],
 'CCM':[{id:'Bleedout or Breakout',icon:'🔥'},{id:'Mould Level Fluctuation',icon:'📊'},{id:'Strand Stop',icon:'🛑'},{id:'Oscillation Fault',icon:'〰️'},{id:'Spray Issue',icon:'💦'},{id:'SEN Breakage',icon:'💥'},{id:'Withdrawal Fault',icon:'⚙️'},{id:'Other',icon:'❓'}],
 'Hydraulics':[{id:'Pressure Drop',icon:'📉'},{id:'Leakage',icon:'💧'},{id:'Overheating',icon:'🌡️'},{id:'Pump Noise',icon:'📳'},{id:'Cylinder Drift',icon:'↔️'},{id:'Filter Alarm',icon:'⚠️'},{id:'Servo Fault',icon:'🔴'},{id:'Other',icon:'❓'}],
 'EOT Crane':[{id:'Brake Not Releasing',icon:'🛑'},{id:'Hoist Not Lifting',icon:'🏋️'},{id:'VFD Fault',icon:'⚡'},{id:'Rope Issue',icon:'🪝'},{id:'Travel Fault',icon:'↔️'},{id:'Overload Trip',icon:'⚠️'},{id:'Abnormal Noise',icon:'📳'},{id:'Other',icon:'❓'}]
 };
-var LOCATIONS = {
+var LOCATIONS={
 'Rolling Mill':['Bearing or Chock','Gearbox','Spindle or Coupling','Hydraulic Cylinder','Roll or Pass','Drive Motor','Pinch Roll','Descaler'],
 'CCM':['Mould or Oscillation','Segment or Rolls','Tundish or SEN','Withdrawal Unit','Spray Zone','Ladle Turret','Dummy Bar','Torch Cutter'],
 'Hydraulics':['HPU or Pump','Servo Valve','Cylinder or Seal','Accumulator','Filter or Cooler','Hose or Fitting','Relief Valve','Manifold Block'],
 'EOT Crane':['Brake System','Hoist Drum or Rope','Gearbox','VFD or Panel','Wheel or Rail','Hook Block','Festoon Cable','Limit Switch']
 };
-var state = {eq:'',sym:'',loc:'',level:'Shift Engineer',mode:'Breakdown',imageBase64:''};
+var state={eq:'',sym:'',loc:'',level:'Shift Engineer',mode:'Breakdown',imageBase64:''};
 
-function goStep(n) {
+function goStep(n){
   for(var i=1;i<=5;i++){document.getElementById('step'+i).classList.add('hidden');}
   document.getElementById('loadingDiv').classList.add('hidden');
   document.getElementById('resultsDiv').classList.add('hidden');
@@ -219,10 +218,8 @@ function goStep(n) {
   }
 }
 
-function pickEquipment(eq) {
-  state.eq=eq;
-  state.sym='';
-  state.loc='';
+function pickEquipment(eq){
+  state.eq=eq;state.sym='';state.loc='';
   var grid=document.getElementById('symptomGrid');
   grid.innerHTML='';
   var syms=SYMPTOMS[eq]||[];
@@ -232,7 +229,7 @@ function pickEquipment(eq) {
   goStep(2);
 }
 
-function pickSymptom(sym) {
+function pickSymptom(sym){
   state.sym=sym;
   var chips=document.getElementById('locationChips');
   chips.innerHTML='';
@@ -243,12 +240,9 @@ function pickSymptom(sym) {
   goStep(3);
 }
 
-function pickLocation(loc) {
-  state.loc=loc;
-  goStep(4);
-}
+function pickLocation(loc){state.loc=loc;goStep(4);}
 
-function pickLevel(l) {
+function pickLevel(l){
   state.level=l;
   document.getElementById('lv1').classList.remove('selected');
   document.getElementById('lv2').classList.remove('selected');
@@ -258,20 +252,19 @@ function pickLevel(l) {
   else{document.getElementById('lv3').classList.add('selected');}
 }
 
-function pickMode(m) {
+function pickMode(m){
   state.mode=m;
   document.getElementById('modeB').classList.toggle('selected',m==='Breakdown');
   document.getElementById('modeR').classList.toggle('selected',m==='Deep RCA');
 }
 
-function handleImage(input) {
-  if(input.files && input.files[0]) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      var result = e.target.result;
-      var base64 = result.split(',')[1];
-      state.imageBase64 = base64;
-      document.getElementById('imagePreview').src = result;
+function handleImage(input){
+  if(input.files&&input.files[0]){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var result=e.target.result;
+      state.imageBase64=result.split(',')[1];
+      document.getElementById('imagePreview').src=result;
       document.getElementById('imagePreview').classList.remove('hidden');
       document.getElementById('uploadArea').classList.add('has-image');
       document.getElementById('imageInfo').classList.remove('hidden');
@@ -280,16 +273,16 @@ function handleImage(input) {
   }
 }
 
-function removeImage() {
-  state.imageBase64 = '';
-  document.getElementById('imagePreview').src = '';
+function removeImage(){
+  state.imageBase64='';
+  document.getElementById('imagePreview').src='';
   document.getElementById('imagePreview').classList.add('hidden');
   document.getElementById('uploadArea').classList.remove('has-image');
   document.getElementById('imageInfo').classList.add('hidden');
-  document.getElementById('imageInput').value = '';
+  document.getElementById('imageInput').value='';
 }
 
-function renderItems(bodyId,countId,items) {
+function renderItems(bodyId,countId,items){
   var el=document.getElementById(bodyId);
   var html='';
   for(var i=0;i<items.length;i++){
@@ -299,24 +292,15 @@ function renderItems(bodyId,countId,items) {
   document.getElementById(countId).textContent=items.length+' items';
 }
 
-function runAnalysis() {
+function runAnalysis(){
   var extra=document.getElementById('extraDesc').value;
   var desc='Equipment: '+state.eq+'. Problem: '+state.sym+' at '+state.loc+'. '+extra;
   document.getElementById('errBox').classList.add('hidden');
   document.getElementById('step5').classList.add('hidden');
   document.getElementById('progress').classList.add('hidden');
   document.getElementById('loadingDiv').classList.remove('hidden');
-
-  var payload = {
-    description: desc,
-    experienceLevel: state.level,
-    mode: state.mode
-  };
-
-  if(state.imageBase64) {
-    payload.image = state.imageBase64;
-  }
-
+  var payload={description:desc,experienceLevel:state.level,mode:state.mode};
+  if(state.imageBase64){payload.image=state.imageBase64;}
   fetch('https://maintenance-ninja.onrender.com/api/analyze',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -325,9 +309,7 @@ function runAnalysis() {
   .then(function(r){return r.json();})
   .then(function(data){
     document.getElementById('loadingDiv').classList.add('hidden');
-    if(state.imageBase64){
-      document.getElementById('imageBadgeResult').classList.remove('hidden');
-    }
+    if(state.imageBase64){document.getElementById('imageBadgeResult').classList.remove('hidden');}
     document.getElementById('summaryText').textContent=data.summary||'';
     renderItems('b1','c1',data.probableCauses||[]);
     renderItems('b2','c2',data.checksToConfirm||[]);
@@ -345,7 +327,7 @@ function runAnalysis() {
   });
 }
 
-function resetApp() {
+function resetApp(){
   state={eq:'',sym:'',loc:'',level:'Shift Engineer',mode:'Breakdown',imageBase64:''};
   document.getElementById('extraDesc').value='';
   removeImage();
