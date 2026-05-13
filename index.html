@@ -15,6 +15,7 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 .step-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#FF6B35;letter-spacing:3px;margin-bottom:8px;}
 .step-title{font-size:20px;font-weight:700;margin-bottom:16px;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
 .grid4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
 .card{background:#111318;border:1px solid #252a35;border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all 0.15s;}
 .card.selected,.card:hover{border-color:#FF6B35;background:rgba(255,107,53,0.1);}
@@ -24,6 +25,8 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
 .chip{background:#111318;border:1px solid #252a35;border-radius:20px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;color:#6b7280;transition:all 0.15s;}
 .chip.selected,.chip:hover{border-color:#4ECDC4;background:rgba(78,205,196,0.1);color:#4ECDC4;}
+.mill-chip{background:#111318;border:1px solid #252a35;border-radius:8px;padding:10px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#6b7280;transition:all 0.15s;text-align:center;}
+.mill-chip.selected,.mill-chip:hover{border-color:#FFE66D;background:rgba(255,230,109,0.08);color:#FFE66D;}
 .textarea{width:100%;background:#111318;border:1px solid #252a35;border-radius:10px;padding:14px;color:#e8eaf0;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.6;resize:vertical;min-height:80px;outline:none;}
 .textarea:focus{border-color:#FF6B35;}
 .textarea::placeholder{color:#374151;}
@@ -85,10 +88,11 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 <div class="progress-step" id="p3"></div>
 <div class="progress-step" id="p4"></div>
 <div class="progress-step" id="p5"></div>
+<div class="progress-step" id="p6"></div>
 </div>
 
 <div id="step1">
-<div class="step-label">STEP 1 OF 5</div>
+<div class="step-label">STEP 1 OF 6</div>
 <div class="step-title">Select Equipment</div>
 <div class="grid2">
 <div class="card" onclick="pickEquipment('Rolling Mill')"><span class="card-icon">⚙️</span><div class="card-label">Rolling Mill</div></div>
@@ -99,21 +103,29 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 </div>
 
 <div id="step2" class="hidden">
-<div class="step-label">STEP 2 OF 5</div>
+<div class="step-label">STEP 2 OF 6</div>
 <div class="step-title">What is the Problem?</div>
 <div class="grid4" id="symptomGrid"></div>
 <button class="btn-back" onclick="goStep(1)">Back</button>
 </div>
 
 <div id="step3" class="hidden">
-<div class="step-label">STEP 3 OF 5</div>
+<div class="step-label">STEP 3 OF 6</div>
 <div class="step-title">Where Exactly?</div>
 <div class="chips" id="locationChips"></div>
 <button class="btn-back" onclick="goStep(2)">Back</button>
 </div>
 
+<div id="step3b" class="hidden">
+<div class="step-label">STEP 4 OF 6</div>
+<div class="step-title">Which Mill Type?</div>
+<div class="step-label" style="margin-bottom:12px">This helps give plant-specific responses</div>
+<div class="chips" id="millTypeChips"></div>
+<button class="btn-back" onclick="goStep(3)">Back</button>
+</div>
+
 <div id="step4" class="hidden">
-<div class="step-label">STEP 4 OF 5</div>
+<div class="step-label">STEP 5 OF 6</div>
 <div class="step-title">Your Level and Mode</div>
 <div class="step-label">EXPERIENCE</div>
 <div class="grid2" style="margin-bottom:16px">
@@ -131,7 +143,7 @@ body{background:#0a0c0f;color:#e8eaf0;font-family:'Rajdhani',sans-serif;min-heig
 </div>
 
 <div id="step5" class="hidden">
-<div class="step-label">STEP 5 OF 5</div>
+<div class="step-label">STEP 6 OF 6</div>
 <div class="step-title">Add Details</div>
 <div class="sel-summary" id="selSum"></div>
 <div class="step-label">📷 UPLOAD PHOTO (OPTIONAL)</div>
@@ -201,25 +213,42 @@ var LOCATIONS={
 'Hydraulics':['HPU or Pump','Servo Valve','Cylinder or Seal','Accumulator','Filter or Cooler','Hose or Fitting','Relief Valve','Manifold Block'],
 'EOT Crane':['Brake System','Hoist Drum or Rope','Gearbox','VFD or Panel','Wheel or Rail','Hook Block','Festoon Cable','Limit Switch']
 };
-var state={eq:'',sym:'',loc:'',level:'Shift Engineer',mode:'Breakdown',imageBase64:''};
+var MILL_TYPES={
+'Rolling Mill':['Rebar Mill','Wire Rod Mill','Structural Mill','Plate Mill','Hot Strip Mill','Merchant Mill','Bar Mill','Section Mill'],
+'CCM':['Billet Caster','Bloom Caster','Slab Caster','Round Caster'],
+'Hydraulics':['Rolling Mill Hydraulics','CCM Hydraulics','Press Hydraulics','General Plant'],
+'EOT Crane':['Melt Shop Crane','Rolling Mill Crane','Yard Crane','General EOT']
+};
+var state={eq:'',sym:'',loc:'',millType:'',level:'Shift Engineer',mode:'Breakdown',imageBase64:''};
 
 function goStep(n){
-  for(var i=1;i<=5;i++){document.getElementById('step'+i).classList.add('hidden');}
+  var steps=['step1','step2','step3','step3b','step4','step5'];
+  for(var i=0;i<steps.length;i++){document.getElementById(steps[i]).classList.add('hidden');}
   document.getElementById('loadingDiv').classList.add('hidden');
   document.getElementById('resultsDiv').classList.add('hidden');
   document.getElementById('progress').classList.remove('hidden');
-  if(n>=1&&n<=5){document.getElementById('step'+n).classList.remove('hidden');}
-  for(var j=1;j<=5;j++){
-    var el=document.getElementById('p'+j);
-    if(j<n){el.classList.add('done');}else{el.classList.remove('done');}
+  if(n===1){document.getElementById('step1').classList.remove('hidden');}
+  else if(n===2){document.getElementById('step2').classList.remove('hidden');}
+  else if(n===3){document.getElementById('step3').classList.remove('hidden');}
+  else if(n===3.5){document.getElementById('step3b').classList.remove('hidden');}
+  else if(n===4){document.getElementById('step4').classList.remove('hidden');}
+  else if(n===5){
+    document.getElementById('step5').classList.remove('hidden');
+    document.getElementById('selSum').innerHTML=
+      '<span class="sel-val">Equipment:</span> '+state.eq+'<br>'+
+      '<span class="sel-val">Mill Type:</span> '+state.millType+'<br>'+
+      '<span class="sel-val">Problem:</span> '+state.sym+'<br>'+
+      '<span class="sel-val">Location:</span> '+state.loc+'<br>'+
+      '<span class="sel-val">Level:</span> '+state.level+' | '+state.mode;
   }
-  if(n===5){
-    document.getElementById('selSum').innerHTML='<span class="sel-val">Equipment:</span> '+state.eq+'<br><span class="sel-val">Problem:</span> '+state.sym+'<br><span class="sel-val">Location:</span> '+state.loc+'<br><span class="sel-val">Level:</span> '+state.level+' | '+state.mode;
+  for(var j=1;j<=6;j++){
+    var el=document.getElementById('p'+j);
+    if(el){if(j<n){el.classList.add('done');}else{el.classList.remove('done');}}
   }
 }
 
 function pickEquipment(eq){
-  state.eq=eq;state.sym='';state.loc='';
+  state.eq=eq;state.sym='';state.loc='';state.millType='';
   var grid=document.getElementById('symptomGrid');
   grid.innerHTML='';
   var syms=SYMPTOMS[eq]||[];
@@ -240,7 +269,21 @@ function pickSymptom(sym){
   goStep(3);
 }
 
-function pickLocation(loc){state.loc=loc;goStep(4);}
+function pickLocation(loc){
+  state.loc=loc;
+  var millChips=document.getElementById('millTypeChips');
+  millChips.innerHTML='';
+  var mills=MILL_TYPES[state.eq]||[];
+  for(var i=0;i<mills.length;i++){
+    millChips.innerHTML+='<div class="chip mill-chip" onclick="pickMillType(\''+mills[i]+'\')">'+mills[i]+'</div>';
+  }
+  goStep(3.5);
+}
+
+function pickMillType(mt){
+  state.millType=mt;
+  goStep(4);
+}
 
 function pickLevel(l){
   state.level=l;
@@ -294,7 +337,7 @@ function renderItems(bodyId,countId,items){
 
 function runAnalysis(){
   var extra=document.getElementById('extraDesc').value;
-  var desc='Equipment: '+state.eq+'. Problem: '+state.sym+' at '+state.loc+'. '+extra;
+  var desc='Mill Type: '+state.millType+'. Equipment: '+state.eq+'. Problem: '+state.sym+' at '+state.loc+'. '+extra;
   document.getElementById('errBox').classList.add('hidden');
   document.getElementById('step5').classList.add('hidden');
   document.getElementById('progress').classList.add('hidden');
@@ -328,7 +371,7 @@ function runAnalysis(){
 }
 
 function resetApp(){
-  state={eq:'',sym:'',loc:'',level:'Shift Engineer',mode:'Breakdown',imageBase64:''};
+  state={eq:'',sym:'',loc:'',millType:'',level:'Shift Engineer',mode:'Breakdown',imageBase64:''};
   document.getElementById('extraDesc').value='';
   removeImage();
   document.getElementById('imageBadgeResult').classList.add('hidden');
