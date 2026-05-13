@@ -196,7 +196,7 @@ var SYMPTOMS={
 'EOT Crane':[{id:'Brake Not Releasing',icon:'🛑'},{id:'Hoist Not Lifting',icon:'🏋️'},{id:'VFD Fault',icon:'⚡'},{id:'Rope Issue',icon:'🪝'},{id:'Travel Fault',icon:'↔️'},{id:'Overload Trip',icon:'⚠️'},{id:'Abnormal Noise',icon:'📳'},{id:'Other',icon:'❓'}]
 };
 var LOCATIONS={
-'Rolling Mill':['Bearing or Chock','Gearbox','Spindle or Coupling','Hydraulic Cylinder','Roll or Pass','Drive Motor','Pinch Roll','Descaler'],
+'Rolling Mill':['Bearing or Chock','Gearbox','Spindle or Coupling','Hydraulic Cylinder','Roll or Pass','Drive Motor','Pinch Roll','Descaler','Looper','BRF or Reheating Furnace','Cooling Bed','Stop Wall','Cold Shear','Bundle Tying Machine','Coupling Box','Roller Table'],
 'CCM':['Mould or Oscillation','Segment or Rolls','Tundish or SEN','Withdrawal Unit','Spray Zone','Ladle Turret','Dummy Bar','Torch Cutter'],
 'Hydraulics':['HPU or Pump','Servo Valve','Cylinder or Seal','Accumulator','Filter or Cooler','Hose or Fitting','Relief Valve','Manifold Block'],
 'EOT Crane':['Brake System','Hoist Drum or Rope','Gearbox','VFD or Panel','Wheel or Rail','Hook Block','Festoon Cable','Limit Switch']
